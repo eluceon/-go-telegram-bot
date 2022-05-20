@@ -1,0 +1,70 @@
+version: "3.9"
+
+services:
+  postgres_db:
+    container_name: postgres_container
+    image: postgres:14.3-alpine3.15
+    env_file: configs/docker/.env
+    volumes:
+      - pgdata:/var/lib/mysql
+      - ./build/postgres_init.sh:/docker-entrypoint-initdb.d/init.sh
+    ports:
+      - "54320:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$DB_NAME" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - quizwithme-network
+
+  parser:
+    container_name: parser_container
+    build:
+      context: .
+      dockerfile: ./deployments/parser/Dockerfile
+    image: parser
+    restart: unless-stopped
+    networks:
+      - quizwithme-network
+
+  telegram:
+    container_name: telegram_container
+    depends_on:
+      - parser
+    build:
+      context: .
+      dockerfile: ./deployments/telegram/Dockerfile
+    image: telegram
+    volumes:
+      - ./configs/telegram_config.yaml:/user/local/bin/configs/telegram_config.yaml
+    restart: unless-stopped
+
+    networks:
+      - quizwithme-network
+  sever:
+    container_name: server_container
+    depends_on:
+      - postgres_db
+      - telegram
+    build:
+      context: .
+      dockerfile: ./deployments/server/Dockerfile
+    image: server
+    volumes:
+      - ./configs/server_config.yaml:/user/local/bin/configs/server_config.yaml
+    restart: unless-stopped
+    networks:
+      - quizwithme-network
+
+networks:
+  quizwithme-network:
+    driver: bridge
+
+volumes:
+  pgdata:
+
+
+

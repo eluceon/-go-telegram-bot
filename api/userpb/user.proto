@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "github.com/eluceon/quizwithmebot/userpb";
+
+message Empty {
+}
+
+message ID {
+  int64 ID = 1;
+}
+
+message Question {
+  string data = 1;
+}
+
+message User {
+  int64 ID = 1;
+  string username = 2;
+  int32 CorrectAnswers = 3;
+  int32 TotalAnswers = 4;
+  bool IsPassing = 5;
+  string RegisteredAt = 6;
+}
+
+message Users {
+  repeated User users = 1;
+}
+
+service UserService {
+  rpc CreateUser(User) returns (Empty) {}
+  rpc ReadUser(ID) returns (User) {}
+  rpc UpdateUser(User) returns (Empty) {}
+  rpc DeleteUser(ID) returns (Empty) {}
+  rpc GetTopUsers(Empty) returns (Users){}
+}

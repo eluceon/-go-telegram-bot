@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package quiz;
+
+option go_package = "github.com/eluceon/quizwithmebot/quizpb";
+
+message QuizRequest {
+  string complexity = 1;
+}
+
+message QuizResponse {
+  string question = 1;
+  string answer = 2;
+}
+
+service QuizService {
+  rpc GetQuiz(QuizRequest) returns (QuizResponse) {}
+}
